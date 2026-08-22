@@ -16,6 +16,7 @@ This is the installable version of [tools I use](https://constdecimalserrno.dev/
 | [matt pocock skills](https://github.com/mattpocock/skills) | grill → spec → tickets → implement |
 | `caffine` | `caffeinate` wrapper. coffee + elapsed time. machine stays awake |
 | `/send-it` | after `/clear`, walk tickets one by one via `/implement` |
+| [vault](https://github.com/constdecimalserrno/vault) | notes, tasks, daily log. `/vault-log` after commits |
 
 Less skills/commands/context = better outcomes. Don't pile this on top of a kitchen-sink plugin list.
 
@@ -41,7 +42,7 @@ What's in it:
 Don't add more here. Per-repo rules go in that repo's `CLAUDE.md` / `AGENTS.md`.
 
 - [ ] `mkdir -p ~/.claude && cp dotfiles/CLAUDE.md ~/.claude/CLAUDE.md`
-- [ ] `~/.claude/CLAUDE.md` is exactly those two rules. nothing else.
+- [ ] `~/.claude/CLAUDE.md` starts as those two rules. nothing else yet (vault-setup appends `/vault-log` in step 5)
 
 ### 2. Statusline
 
@@ -106,6 +107,37 @@ The post-`/clear` ticket loop is this repo's skill. `/send-it` after `/to-ticket
 - [ ] `claude plugin enable ai-toolkit@ai-toolkit`
 - [ ] `claude plugin details ai-toolkit@ai-toolkit` lists skill `send-it`
 
+### 5. Vault
+
+[vault](https://github.com/constdecimalserrno/vault) — personal Obsidian vault + agent skills. Plugin copies skills, not notes. `/vault-setup` points them at the vault directory.
+
+Claude Code:
+
+```
+/plugin marketplace add constdecimalserrno/vault
+/plugin install vault@vault
+```
+
+Grok:
+
+```
+grok plugin marketplace add constdecimalserrno/vault
+grok plugin install vault --trust
+```
+
+Then `/vault-setup`.
+
+- [ ] Vault clone exists (default `~/Documents/Playground/vault`). If missing: `git clone git@github.com:constdecimalserrno/vault.git`
+- [ ] `claude plugin marketplace add constdecimalserrno/vault` (or the local clone path)
+- [ ] `claude plugin install vault@vault -y --scope user`
+- [ ] `claude plugin enable vault@vault`
+- [ ] `claude plugin list` shows `vault@vault` enabled
+- [ ] `grok plugin marketplace add constdecimalserrno/vault` (or the local clone path)
+- [ ] `grok plugin install vault --trust`
+- [ ] `grok plugin list` shows `vault` enabled
+- [ ] `/vault-setup` — `~/.config/vault/root` is one absolute path; that dir has `notes/`, `logs/`, `tasks.md`
+- [ ] `~/.claude/CLAUDE.md` contains: `Before ending a turn that made a git commit, wrote an Artifact (code, spec, file, research dump), or did research the user asked for: run `/vault-log`.`
+
 Machine setup ends here. Tell the user to restart Claude.
 
 ---
@@ -158,3 +190,4 @@ templates/gitignore             /context/
 - [ponytail](https://github.com/DietrichGebert/ponytail)
 - [mattpocock/skills](https://github.com/mattpocock/skills)
 - [Matt Pocock](https://x.com/mattpocockuk)
+- [vault](https://github.com/constdecimalserrno/vault)
