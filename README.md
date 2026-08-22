@@ -12,6 +12,7 @@ This is the installable version of [tools I use](https://constdecimalserrno.dev/
 | statusline | `ctx` · `5h` · `7d` · `pace` at the bottom of every session |
 | [ponytail](https://github.com/DietrichGebert/ponytail) | stop the agent from writing 50 lines when 1 will do |
 | [matt pocock skills](https://github.com/mattpocock/skills) | grill → spec → tickets → implement |
+| `caffine` | `caffeinate` wrapper. coffee + elapsed time. machine stays awake |
 
 Less skills/commands/context = better outcomes. Don't pile this on top of a kitchen-sink plugin list.
 
@@ -60,6 +61,25 @@ Opus 5 · xhigh │ ctx 4% 37k │ 5h 7% │ 7d 64% │ pace -41%
 7d / 100% ≈ 14% per day. After day 1, `pace +14%` means you used ~0%. `pace -14%` means you already burned ~28%. `pace -99%` = you used fable, switch to the alt max account.
 
 Installer copies `scripts/statusline.py` → `~/.claude/statusline/` and sets `statusLine` in `~/.claude/settings.json`. Doesn't wipe the rest of that file.
+
+## 2b. Caffine
+
+Long agent loops + a sleeping Mac = wasted credits. `scripts/caffine` wraps macOS `caffeinate` and prints a live timer:
+
+```
+☕  caffinated 00:12:34
+```
+
+Ctrl-C stops it (and lets the machine sleep again).
+
+Alias — add to `~/.zshrc` (run from this repo):
+
+```bash
+echo "alias caffine='$(pwd)/scripts/caffine'" >> ~/.zshrc
+source ~/.zshrc
+```
+
+Then just `caffine`.
 
 ## 3. Ponytail
 
@@ -150,6 +170,7 @@ Small enough for one context window? Skip tickets. `/implement` against the spec
 dotfiles/CLAUDE.md              → ~/.claude/CLAUDE.md
 scripts/statusline.py           source of truth
 scripts/install-statusline.sh   copies it + wires settings.json
+scripts/caffine                 keep machine awake, ☕ + elapsed time
 templates/gitignore             /context/
 templates/auto-loop.md          paste after /clear
 ```

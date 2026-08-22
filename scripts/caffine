@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Keep the Mac awake. Ctrl-C to stop.
+set -euo pipefail
+
+start=$(date +%s)
+caffeinate -dims &
+pid=$!
+
+cleanup() {
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+  printf '\n'
+  exit 0
+}
+trap cleanup INT TERM
+
+while kill -0 "$pid" 2>/dev/null; do
+  s=$(( $(date +%s) - start ))
+  printf '\r☕  caffinated %02d:%02d:%02d' $((s/3600)) $(((s%3600)/60)) $((s%60))
+  sleep 1
+done
