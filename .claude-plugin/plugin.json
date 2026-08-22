@@ -1,0 +1,15 @@
+{
+  "name": "ai-toolkit",
+  "version": "1.0.0",
+  "description": "constdecimalserrno's Claude Code toolkit",
+  "author": {
+    "name": "constdecimalserrno",
+    "url": "https://github.com/constdecimalserrno"
+  },
+  "homepage": "https://github.com/constdecimalserrno/ai-toolkit",
+  "repository": "https://github.com/constdecimalserrno/ai-toolkit",
+  "license": "MIT",
+  "skills": [
+    "./skills/send-it"
+  ]
+}

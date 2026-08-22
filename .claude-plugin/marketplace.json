@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ai-toolkit",
+  "description": "constdecimalserrno's Claude Code toolkit",
+  "owner": {
+    "name": "constdecimalserrno",
+    "url": "https://github.com/constdecimalserrno"
+  },
+  "plugins": [
+    {
+      "name": "ai-toolkit",
+      "description": "send-it and the rest of the local Claude Code setup",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

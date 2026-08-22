@@ -13,6 +13,7 @@ This is the installable version of [tools I use](https://constdecimalserrno.dev/
 | [ponytail](https://github.com/DietrichGebert/ponytail) | stop the agent from writing 50 lines when 1 will do |
 | [matt pocock skills](https://github.com/mattpocock/skills) | grill → spec → tickets → implement |
 | `caffine` | `caffeinate` wrapper. coffee + elapsed time. machine stays awake |
+| `/send-it` | after `/clear`, walk tickets one by one via `/implement` |
 
 Less skills/commands/context = better outcomes. Don't pile this on top of a kitchen-sink plugin list.
 
@@ -128,6 +129,27 @@ Once per repo, still inside Claude:
 
 Picks issue tracker (GitHub / Linear / local files), triage labels, where docs land.
 
+## 4b. send-it
+
+The post-`/clear` ticket loop is a skill. Install this repo as a plugin:
+
+```
+/plugin marketplace add constdecimalserrno/ai-toolkit
+```
+
+```
+/plugin install ai-toolkit@ai-toolkit
+```
+
+Or from a shell, in this repo:
+
+```bash
+claude plugin marketplace add "$(pwd)"
+claude plugin install ai-toolkit@ai-toolkit -y --scope user
+```
+
+Then `/send-it` after `/to-tickets` + `/clear`.
+
 ## 5. Per-repo bootstrap
 
 Every new project:
@@ -148,10 +170,7 @@ Greenfield, or a change big enough to span sessions:
 3. Same context: `/to-spec`
 4. `/to-tickets` — confirm.
 5. `/clear`
-6. Auto-mode (`shift+tab` until it sticks). Paste [`templates/auto-loop.md`](templates/auto-loop.md):
-
-   > I want you to go ticket by ticket, one at a time and call "/implement \<ticket#\>" ( its okay to copy and paste the skill ). do this until all tickets are done.
-
+6. Auto-mode (`shift+tab` until it sticks). `/send-it`
 7. Come back in 1–8 hours.
 
 Same loop for a PR or a fix in an existing repo: skip the empty-folder step, `plan.md` is "what I want to add or fix".
@@ -171,8 +190,8 @@ dotfiles/CLAUDE.md              → ~/.claude/CLAUDE.md
 scripts/statusline.py           source of truth
 scripts/install-statusline.sh   copies it + wires settings.json
 scripts/caffine                 keep machine awake, ☕ + elapsed time
+skills/send-it/SKILL.md         /send-it — ticket loop after /clear
 templates/gitignore             /context/
-templates/auto-loop.md          paste after /clear
 ```
 
 ## Source
