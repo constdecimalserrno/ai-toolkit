@@ -4,6 +4,8 @@ How I set up Claude Code so I can run 4–8 sessions without drowning.
 
 This is the installable version of [tools I use](https://constdecimalserrno.dev/posts/tools-i-use/). Claude Code only. If you're on something else, swap the agent and keep the loop.
 
+**Agents:** this file is the job. Work every `- [ ]` top to bottom. After each item is true, change it to `- [x]` in this file. Already-true still gets the check. Do not skip. Do not add extra plugins, skills, or rules. Stop when the machine checklist is done unless the user asked for a project bootstrap or the loop.
+
 ## Stack
 
 | piece | what it does |
@@ -17,20 +19,19 @@ This is the installable version of [tools I use](https://constdecimalserrno.dev/
 
 Less skills/commands/context = better outcomes. Don't pile this on top of a kitchen-sink plugin list.
 
-## 0. Prereqs
+---
 
-- [Claude Code](https://code.claude.com/docs)
-- `python3` (statusline)
-- `node` on PATH (ponytail's lifecycle hooks)
+## Machine setup
 
-## 1. Global CLAUDE.md
+### 0. Prereqs
+
+- [ ] [Claude Code](https://code.claude.com/docs) installed (`claude --version`)
+- [ ] `python3` on PATH (statusline)
+- [ ] `node` on PATH (ponytail lifecycle hooks). If missing, install Node LTS and put `node` on PATH for non-interactive shells too (e.g. `~/.local/bin` + `~/.zshenv`)
+
+### 1. Global CLAUDE.md
 
 Master file. Keep it clean. Keep it simple.
-
-```bash
-mkdir -p ~/.claude
-cp dotfiles/CLAUDE.md ~/.claude/CLAUDE.md
-```
 
 What's in it:
 
@@ -39,12 +40,12 @@ What's in it:
 
 Don't add more here. Per-repo rules go in that repo's `CLAUDE.md` / `AGENTS.md`.
 
-## 2. Statusline
+- [ ] `mkdir -p ~/.claude && cp dotfiles/CLAUDE.md ~/.claude/CLAUDE.md`
+- [ ] `~/.claude/CLAUDE.md` is exactly those two rules. nothing else.
 
-```bash
-chmod +x scripts/install-statusline.sh
-./scripts/install-statusline.sh
-```
+### 2. Statusline
+
+Installer copies `scripts/statusline.py` → `~/.claude/statusline/` and sets `statusLine` in `~/.claude/settings.json`. Doesn't wipe the rest of that file.
 
 Restart Claude. You should see something like:
 
@@ -61,9 +62,10 @@ Opus 5 · xhigh │ ctx 4% 37k │ 5h 7% │ 7d 64% │ pace -41%
 
 7d / 100% ≈ 14% per day. After day 1, `pace +14%` means you used ~0%. `pace -14%` means you already burned ~28%. `pace -99%` = you used fable, switch to the alt max account.
 
-Installer copies `scripts/statusline.py` → `~/.claude/statusline/` and sets `statusLine` in `~/.claude/settings.json`. Doesn't wipe the rest of that file.
+- [ ] `chmod +x scripts/install-statusline.sh && ./scripts/install-statusline.sh`
+- [ ] `~/.claude/settings.json` has `statusLine.command` pointing at `~/.claude/statusline/statusline.py`
 
-## 2b. Caffine
+### 2b. Caffine
 
 Long agent loops + a sleeping Mac = wasted credits. `scripts/caffine` wraps macOS `caffeinate` and prints a live timer:
 
@@ -73,109 +75,65 @@ Long agent loops + a sleeping Mac = wasted credits. `scripts/caffine` wraps macO
 
 Ctrl-C stops it (and lets the machine sleep again).
 
-Alias — add to `~/.zshrc` (run from this repo):
+- [ ] `chmod +x scripts/caffine`
+- [ ] `~/.zshrc` has `alias caffine='…/ai-toolkit/scripts/caffine'` (add once, don't duplicate). From this repo: `echo "alias caffine='$(pwd)/scripts/caffine'" >> ~/.zshrc`
 
-```bash
-echo "alias caffine='$(pwd)/scripts/caffine'" >> ~/.zshrc
-source ~/.zshrc
-```
-
-Then just `caffine`.
-
-## 3. Ponytail
-
-Two separate prompts inside Claude Code:
-
-```
-/plugin marketplace add DietrichGebert/ponytail
-```
-
-```
-/plugin install ponytail@ponytail
-```
+### 3. Ponytail
 
 It injects rules that make the agent write less, worse-is-better code. **Keep those rules.**
 
-Daily commands:
+Daily commands: `/ponytail-review` (PR / diff), `/ponytail-audit` (whole repo). Optional: `/ponytail lite|full|ultra|off`. Default is `full`.
 
-| command | when |
-| --- | --- |
-| `/ponytail-review` | review the current PR / diff for over-engineering |
-| `/ponytail-audit` | review a whole repo |
+- [ ] `claude plugin marketplace add DietrichGebert/ponytail`
+- [ ] `claude plugin install ponytail@ponytail -y --scope user`
+- [ ] `claude plugin enable ponytail@ponytail`
+- [ ] `claude plugin list` shows `ponytail@ponytail` enabled
 
-Optional: `/ponytail lite\|full\|ultra\|off` to change intensity. Default is `full`.
-
-## 4. Matt Pocock skills
-
-Inside Claude Code:
-
-```
-/plugin install mattpocock-skills
-```
-
-Or from a shell:
-
-```bash
-claude plugins install mattpocock-skills
-```
+### 4. Matt Pocock skills
 
 Official marketplace — nothing to add first. Don't also run `npx skills add mattpocock/skills` in the same repo or you'll get every skill twice.
 
-Once per repo, still inside Claude:
+- [ ] `claude plugin install mattpocock-skills -y --scope user`
+- [ ] `claude plugin enable mattpocock-skills`
+- [ ] `claude plugin list` shows `mattpocock-skills` enabled
 
-```
-/setup-matt-pocock-skills
-```
+### 4b. send-it
 
-Picks issue tracker (GitHub / Linear / local files), triage labels, where docs land.
+The post-`/clear` ticket loop is this repo's skill. `/send-it` after `/to-tickets` + `/clear`.
 
-## 4b. send-it
+- [ ] `claude plugin marketplace add "$(pwd)"` (or `constdecimalserrno/ai-toolkit`)
+- [ ] `claude plugin install ai-toolkit@ai-toolkit -y --scope user`
+- [ ] `claude plugin enable ai-toolkit@ai-toolkit`
+- [ ] `claude plugin details ai-toolkit@ai-toolkit` lists skill `send-it`
 
-The post-`/clear` ticket loop is a skill. Install this repo as a plugin:
+Machine setup ends here. Tell the user to restart Claude.
 
-```
-/plugin marketplace add constdecimalserrno/ai-toolkit
-```
+---
 
-```
-/plugin install ai-toolkit@ai-toolkit
-```
+## Per-repo bootstrap
 
-Or from a shell, in this repo:
+Every new project. Existing repo / a PR: skip the empty-folder step if already set up.
 
-```bash
-claude plugin marketplace add "$(pwd)"
-claude plugin install ai-toolkit@ai-toolkit -y --scope user
-```
+- [ ] Clean folder + GitHub repo (skip if this repo already exists)
+- [ ] `/setup-matt-pocock-skills` — tracker (GitHub / Linear / local files), triage labels, where docs land
+- [ ] Append [`templates/gitignore`](templates/gitignore) so `/context` never ships
+- [ ] `mkdir context` — dump transcripts, screenshots, dumps. Gitignored on purpose.
 
-Then `/send-it` after `/to-tickets` + `/clear`.
-
-## 5. Per-repo bootstrap
-
-Every new project:
-
-1. Clean folder + GitHub repo.
-2. `/setup-matt-pocock-skills`
-3. Append [`templates/gitignore`](templates/gitignore) so `/context` never ships.
-4. `mkdir context` and dump whatever the agent actually needs: meeting transcripts, screenshots, dumps. Gitignored on purpose.
-
-Existing repo / a PR: skip 1–2 if already set up. Start at the plan.
+---
 
 ## The loop
 
-Greenfield, or a change big enough to span sessions:
+Greenfield, or a change big enough to span sessions. Same loop for a PR or a fix: skip the empty-folder step, `plan.md` is "what I want to add or fix". Small enough for one context window? Skip tickets. `/implement` against the spec / the conversation.
 
-1. Write `plan.md`. As much or as little detail as you have.
-2. `/grill-with-docs plan.md` — answer until you and the agent share one understanding.
-3. Same context: `/to-spec`
-4. `/to-tickets` — confirm.
-5. `/clear`
-6. Auto-mode (`shift+tab` until it sticks). `/send-it`
-7. Come back in 1–8 hours.
+- [ ] Write `plan.md`. As much or as little detail as you have.
+- [ ] `/grill-with-docs plan.md` — answer until you and the agent share one understanding.
+- [ ] Same context: `/to-spec`
+- [ ] `/to-tickets` — confirm.
+- [ ] `/clear`
+- [ ] Auto-mode (`shift+tab` until it sticks). `/send-it`
+- [ ] Come back in 1–8 hours.
 
-Same loop for a PR or a fix in an existing repo: skip the empty-folder step, `plan.md` is "what I want to add or fix".
-
-Small enough for one context window? Skip tickets. `/implement` against the spec / the conversation.
+---
 
 ## Hygiene
 
