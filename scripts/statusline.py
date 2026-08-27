@@ -132,12 +132,41 @@ def seg_plan(data):
     return parts or [paint("plan n/a", "dim")]
 
 
+def dump_usage(data):
+    """One TSV row for `monitor`: epoch, 5h %, 5h reset, 7d %, 7d reset, pace."""
+    rl = data.get("rate_limits")
+    if not isinstance(rl, dict):
+        return
+    five, seven = rl.get("five_hour") or {}, rl.get("seven_day") or {}
+    five_pct, seven_pct = pct_num(five.get("used_percentage")), pct_num(seven.get("used_percentage"))
+    if five_pct is None or seven_pct is None:
+        return
+    try:
+        remaining = int(seven.get("resets_at")) - int(time.time())
+    except (TypeError, ValueError):
+        return
+    elapsed = max(0, min(SEVEN_DAYS, SEVEN_DAYS - remaining))
+    pace = int(round(elapsed / float(SEVEN_DAYS) * 100.0 - seven_pct))
+    row = "\t".join(str(x) for x in (
+        int(time.time()), five_pct, fmt_reset(five.get("resets_at")) or "?",
+        seven_pct, fmt_reset(seven.get("resets_at")) or "?", pace))
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "usage.txt")
+    tmp = path + ".tmp"
+    with open(tmp, "w") as fh:
+        fh.write(row + "\n")
+    os.replace(tmp, path)
+
+
 def main():
     try:
         raw = sys.stdin.read()
         data = json.loads(raw) if raw.strip() else {}
         if not isinstance(data, dict):
             raise ValueError("payload is not an object")
+        try:
+            dump_usage(data)
+        except Exception:
+            pass
         sys.stdout.write(paint(" │ ", "dim").join(
             [seg_model(data), seg_context(data)] + seg_plan(data)))
     except Exception:

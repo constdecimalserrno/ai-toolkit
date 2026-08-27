@@ -14,7 +14,8 @@ This is the installable version of [tools I use](https://constdecimalserrno.dev/
 | statusline | `ctx` · `5h` · `7d` · `pace` at the bottom of every session |
 | [ponytail](https://github.com/DietrichGebert/ponytail) | stop the agent from writing 50 lines when 1 will do |
 | [matt pocock skills](https://github.com/mattpocock/skills) | grill → spec → tickets → implement |
-| `caffine` | `caffeinate` wrapper. coffee + elapsed time. machine stays awake |
+| `monitor` | ratatui system dashboard. CPU/RAM/disk/net, Claude sessions + plan usage. keeps the Mac awake while it runs |
+| `ding` | sound when the agent finishes or needs you. 4–8 sessions, you can't watch them all |
 | `/send-it` | after `/clear`, walk tickets one by one via `/implement` |
 | [vault](https://github.com/constdecimalserrno/vault) | notes, tasks, daily log. `/vault-log` after commits |
 
@@ -29,6 +30,7 @@ Less skills/commands/context = better outcomes. Don't pile this on top of a kitc
 - [x] [Claude Code](https://code.claude.com/docs) installed (`claude --version`)
 - [x] `python3` on PATH (statusline)
 - [x] `node` on PATH (ponytail lifecycle hooks). If missing, install Node LTS and put `node` on PATH for non-interactive shells too (e.g. `~/.local/bin` + `~/.zshenv`)
+- [x] `cargo` on PATH (`monitor`). If missing: `curl https://sh.rustup.rs -sSf | sh`
 
 ### 1. Global CLAUDE.md
 
@@ -64,21 +66,45 @@ Opus 5 · xhigh │ ctx 4% 37k │ 5h 7% │ 7d 64% │ pace -41%
 
 7d / 100% ≈ 14% per day. After day 1, `pace +14%` means you used ~0%. `pace -14%` means you already burned ~28%. `pace -99%` = you used fable, switch to the alt max account.
 
+Every refresh also writes `~/.claude/statusline/usage.txt` — one tab-separated row (`epoch, 5h %, 5h reset, 7d %, 7d reset, pace`) that `monitor` reads for its CLAUDE panel. Only updates while a session is open.
+
 - [x] `chmod +x scripts/install-statusline.sh && ./scripts/install-statusline.sh`
 - [x] `~/.claude/settings.json` has `statusLine.command` pointing at `~/.claude/statusline/statusline.py`
 
-### 2b. Caffine
+### 2b. Monitor
 
-Long agent loops + a sleeping Mac = wasted credits. `scripts/caffine` wraps macOS `caffeinate` and prints a live timer:
+Long agent loops + a sleeping Mac = wasted credits. `monitor` is a ratatui dashboard that holds the machine awake (`caffeinate -dimsu -w <pid>`) for as long as it runs, and shows you what the loops are doing while they do it: CPU (global + per-core), RAM/swap, memory by process, disks, disk usage by project, live Claude sessions (context size + what each is working on), per-process network, 5h/7d plan gauges + pace, clock.
 
-```
-☕  caffinated 00:12:34
-```
+Replaces the old `caffine` script. `q` / `esc` quits, and the machine can sleep again.
 
-Ctrl-C stops it (and lets the machine sleep again).
+Details in [`monitor/README.md`](monitor/README.md). `MONITOR_PROJECT_ROOT` picks the tree the DISK BY PROJECT panel scans (default `~/Documents`).
 
-- [x] `chmod +x scripts/caffine`
-- [x] `~/.zshrc` has `alias caffine='…/ai-toolkit/scripts/caffine'` (add once, don't duplicate). From this repo: `echo "alias caffine='$(pwd)/scripts/caffine'" >> ~/.zshrc`
+- [x] `cargo install --path monitor` (installs `monitor` to `~/.cargo/bin`)
+- [x] `~/.cargo/bin` on PATH — `monitor` starts and `q` quits
+- [x] `~/.zshrc` exports `MONITOR_PROJECT_ROOT` if your projects don't live in `~/Documents`
+- [x] Old `alias caffine=…` removed from `~/.zshrc`
+
+### 2c. Ding
+
+Running 4–8 sessions means you're not looking at the one that just stopped. `scripts/ding.sh` plays a sound on two hooks:
+
+| hook | fires when |
+| --- | --- |
+| `Stop` | agent finished the turn — it's your move |
+| `Notification` | permission prompt or idle nudge — it's blocked on you |
+
+Sound resolution, first hit wins:
+
+1. `$CLAUDE_DING_SOUND` — any file, anywhere
+2. `~/.claude/ding.mp3` — drop your own file here, no config
+3. `/System/Library/Sounds/Glass.aiff` — macOS built-in fallback
+
+`afplay` takes mp3/aiff/wav/m4a. Plays detached, so a hook never blocks the turn. Swap the sound: `cp whatever.mp3 ~/.claude/ding.mp3`. Preview what's picked: `./scripts/ding.sh --which`.
+
+- [x] `chmod +x scripts/ding.sh scripts/install-ding.sh && ./scripts/install-ding.sh`
+- [x] `./scripts/test-ding.sh` prints `ding.sh ok`
+- [x] `~/.claude/settings.json` has `Stop` + `Notification` hooks pointing at `~/.claude/ding.sh`
+- [ ] Restart Claude (or open `/hooks` once) so the hooks load
 
 ### 3. Ponytail
 
@@ -178,9 +204,12 @@ Greenfield, or a change big enough to span sessions. Same loop for a PR or a fix
 
 ```
 dotfiles/CLAUDE.md              → ~/.claude/CLAUDE.md
-scripts/statusline.py           source of truth
+scripts/statusline.py           source of truth (also writes usage.txt for monitor)
 scripts/install-statusline.sh   copies it + wires settings.json
-scripts/caffine                 keep machine awake, ☕ + elapsed time
+monitor/                        `monitor` TUI — dashboard + keeps machine awake
+scripts/ding.sh                 sound on Stop / Notification hooks
+scripts/install-ding.sh         copies it + wires both hooks
+scripts/test-ding.sh            asserts sound resolution
 skills/send-it/SKILL.md         /send-it — ticket loop after /clear
 templates/gitignore             /context/
 ```
