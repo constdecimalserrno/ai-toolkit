@@ -75,14 +75,14 @@ Every refresh also writes `~/.claude/statusline/usage.txt` — one tab-separated
 
 Long agent loops + a sleeping Mac = wasted credits. `monitor` is a ratatui dashboard that holds the machine awake (`caffeinate -dimsu -w <pid>`) for as long as it runs, and shows you what the loops are doing while they do it: CPU (global + per-core), RAM/swap, memory by process, disks, disk usage by project, live Claude sessions (context size + what each is working on), per-process network, 5h/7d plan gauges + pace, clock.
 
-Replaces the old `caffine` script. `q` / `esc` quits, and the machine can sleep again.
+Replaces the old `caffine` script — the `caffine` alias now points at `monitor`, so the muscle memory still works. `q` / `esc` quits, and the machine can sleep again.
 
 Details in [`monitor/README.md`](monitor/README.md). `MONITOR_PROJECT_ROOT` picks the tree the DISK BY PROJECT panel scans (default `~/Documents`).
 
 - [x] `cargo install --path monitor` (installs `monitor` to `~/.cargo/bin`)
 - [x] `~/.cargo/bin` on PATH — `monitor` starts and `q` quits
 - [x] `~/.zshrc` exports `MONITOR_PROJECT_ROOT` if your projects don't live in `~/Documents`
-- [x] Old `alias caffine=…` removed from `~/.zshrc`
+- [x] `~/.zshrc` has `alias caffine="$HOME/.cargo/bin/monitor"` — muscle memory still works, `caffine` opens the dashboard
 
 ### 2c. Ding
 
